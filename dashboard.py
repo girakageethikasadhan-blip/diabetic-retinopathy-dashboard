@@ -6,9 +6,7 @@ import tensorflow as tf
 from pathlib import Path
 from PIL import Image
 
-# -------------------------------
 # PAGE CONFIGURATION
-# -------------------------------
 st.set_page_config(
     page_title="Diabetic Retinopathy Dashboard",
     page_icon="👁️",
@@ -16,8 +14,12 @@ st.set_page_config(
 )
 
 BASE_DIR = Path(__file__).resolve().parent
-OUTPUT_DIR = BASE_DIR / "output"
-MODEL_DIR = BASE_DIR / "models"
+
+# Files are stored in the main GitHub folder
+OUTPUT_DIR = BASE_DIR
+
+# Model is also expected in the main folder
+MODEL_PATH = BASE_DIR / "diabetic_retinopathy_model.keras"
 
 CLASS_NAMES = [
     "Mild",
@@ -27,20 +29,12 @@ CLASS_NAMES = [
     "Severe"
 ]
 
-# -------------------------------
 # PAGE TITLE
-# -------------------------------
 st.title("👁️ Diabetic Retinopathy Classification")
 st.subheader("Results and Evaluation Dashboard")
 st.caption("CNN | TensorFlow | Five-Class Classification")
 
-if not OUTPUT_DIR.exists():
-    st.error("Output folder not found.")
-    st.stop()
-
-# -------------------------------
 # HELPER FUNCTIONS
-# -------------------------------
 def show_image(filename, title):
     path = OUTPUT_DIR / filename
 
@@ -49,7 +43,7 @@ def show_image(filename, title):
     if path.exists():
         st.image(str(path), use_column_width=True)
     else:
-        st.info(f"{filename} not found.")
+        st.info(f"{filename} not found in the main folder.")
 
 
 def show_sample_predictions():
@@ -81,9 +75,7 @@ def load_trained_model(model_path):
     return tf.keras.models.load_model(str(model_path))
 
 
-# -------------------------------
 # DASHBOARD TABS
-# -------------------------------
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Overview",
     "Training Graphs",
@@ -92,9 +84,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Error Analysis"
 ])
 
-# -------------------------------
 # TAB 1: OVERVIEW
-# -------------------------------
 with tab1:
     st.header("Project Overview")
 
@@ -129,9 +119,7 @@ with tab1:
     st.write("Training split: 80%")
     st.write("Testing split: 20%")
 
-# -------------------------------
 # TAB 2: TRAINING GRAPHS
-# -------------------------------
 with tab2:
     st.header("Training Performance")
 
@@ -145,9 +133,7 @@ with tab2:
         "Training vs Validation Loss"
     )
 
-# -------------------------------
 # TAB 3: MODEL EVALUATION
-# -------------------------------
 with tab3:
     st.header("Model Evaluation")
 
@@ -182,9 +168,7 @@ with tab3:
     else:
         st.info("Classification report not found.")
 
-# -------------------------------
 # TAB 4: PREDICTIONS
-# -------------------------------
 with tab4:
     st.header("Sample Prediction Results")
 
@@ -214,17 +198,15 @@ with tab4:
 
             if st.button("Predict Diabetic Retinopathy"):
 
-                model_path = (
-                    MODEL_DIR / "diabetic_retinopathy_model.keras"
-                )
-
-                if not model_path.exists():
-                    st.error("Trained model not found.")
+                if not MODEL_PATH.exists():
+                    st.error(
+                        "Trained model not found in the main folder."
+                    )
 
                 else:
                     with st.spinner("Analyzing image..."):
 
-                        model = load_trained_model(model_path)
+                        model = load_trained_model(MODEL_PATH)
 
                         resized_image = uploaded_image.resize(
                             (128, 128)
@@ -274,9 +256,7 @@ with tab4:
         except Exception as e:
             st.error(f"Error processing image: {e}")
 
-# -------------------------------
 # TAB 5: ERROR ANALYSIS
-# -------------------------------
 with tab5:
     st.header("Error Analysis")
 
@@ -298,9 +278,7 @@ with tab5:
         "Minority classes need further improvement."
     )
 
-# -------------------------------
 # FOOTER
-# -------------------------------
 st.divider()
 
 st.caption(
